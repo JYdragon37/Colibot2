@@ -1,8 +1,9 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
 import csv
 from scheduler import start_scheduler
 from modules.weather import capture_weather
+import os
 
 app = Flask(__name__)
 CORS(app)
@@ -47,10 +48,21 @@ def trending():
 @app.route('/weather')
 def weather():
     try:
-        screenshot_path = capture_weather()
-        return jsonify({"screenshot": screenshot_path})
+        weather_dir = 'frontend/public/weather'
+        # 가장 최근 날씨 이미지 파일 찾기
+        weather_files = [f for f in os.listdir(weather_dir) if f.startswith('weather_') and f.endswith('.png')]
+        if not weather_files:
+            return jsonify({"error": "No weather image found"}), 404
+
+        latest_file = sorted(weather_files)[-1]
+        image_path = f'/weather/{latest_file}'
+        return jsonify({"screenshot": image_path})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/weather/<path:filename>')
+def serve_weather_image(filename):
+    return send_from_directory('frontend/public/weather', filename)
+
 if __name__ == '__main__':
-    app.run(port=5001)
+    app.run(host='0.0.0.0', port=5001)

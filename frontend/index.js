@@ -6,7 +6,10 @@ const app = express();
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-app.use(express.static(path.join(__dirname, 'public')));
+
+// 정적 파일 경로 수정
+app.use(express.static(path.join(__dirname, '../backend/frontend/public')));
+app.use('/weather', express.static(path.join(__dirname, '../backend/frontend/public/weather')));
 
 app.get('/', async (req, res) => {
     try {
